@@ -1,0 +1,64 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Directories
+*_bak/
+*_bak2/
+tmp/
+temp/
+logs/
+
+# Compiled object files, static and dynamic libs (shared objects)
+*.o
+*.a
+*.d
+*.idx
+*.gz
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories (remove the comment below if you use go modules)
+vendor/
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Directories
+*_bak/
+*_bak2/
+tmp/
+temp/
+logs/
+
+# Compiled object files, static and dynamic libs (shared objects)
+*.o
+*.a
+*.d
+*.idx
+*.gz
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories (remove the comment below if you use go modules)
+vendor/
+
+tls/
