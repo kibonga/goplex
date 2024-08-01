@@ -9,7 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (app *app) readIdParam(r *http.Request) (int, error) {
+func (app *app) readIdParam(r *http.Request) (int64, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 
 	id, err := strconv.ParseInt(params.ByName("id"), 10, 32)
@@ -17,7 +17,7 @@ func (app *app) readIdParam(r *http.Request) (int, error) {
 		return 0, fmt.Errorf("invalid id provided")
 	}
 
-	return int(id), nil
+	return id, nil
 }
 
 func (app *app) writeJson(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
