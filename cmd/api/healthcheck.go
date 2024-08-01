@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
 )
 
@@ -19,12 +18,8 @@ func (app *app) healtcheckHandler(w http.ResponseWriter, r *http.Request) {
 		Version:     app.version,
 	}
 
-	b, err := json.Marshal(data)
+	err := app.writeJsonToStream(w, http.StatusOK, data, nil)
 	if err != nil {
 		http.Error(w, "failed to process the request", http.StatusInternalServerError)
-		return
 	}
-
-	w.Header().Add("Content-Type", "application/json")
-	w.Write(b)
 }
