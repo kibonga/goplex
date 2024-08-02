@@ -10,7 +10,7 @@ import (
 func (app *app) showMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIdParam(r)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		app.notFoundResponse(w, r)
 		return
 	}
 
@@ -24,7 +24,7 @@ func (app *app) showMovieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := app.writeJsonToStream(w, http.StatusOK, payload{"movie": data}, nil); err != nil {
-		http.Error(w, "failed to process request", http.StatusInternalServerError)
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 }
