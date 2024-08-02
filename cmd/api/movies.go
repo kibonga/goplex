@@ -23,7 +23,7 @@ func (app *app) showMovieHandler(w http.ResponseWriter, r *http.Request) {
 		Genres:    []string{"Sci-Fi", "Horror", "Thriller"},
 	}
 
-	if err := app.writeJsonToStream(w, http.StatusOK, data, nil); err != nil {
+	if err := app.writeJsonToStream(w, http.StatusOK, payload{"movie": data}, nil); err != nil {
 		http.Error(w, "failed to process request", http.StatusInternalServerError)
 		return
 	}
