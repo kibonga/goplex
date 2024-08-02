@@ -26,6 +26,6 @@ func (app *app) healtcheckHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := app.writeJsonToStream(w, http.StatusOK, data, nil)
 	if err != nil {
-		http.Error(w, "failed to process the request", http.StatusInternalServerError)
+		app.serverErrorResponse(w, r, err)
 	}
 }
