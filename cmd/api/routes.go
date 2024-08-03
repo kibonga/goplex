@@ -15,7 +15,7 @@ func (app *app) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healtcheckHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/movies/:id", app.showMovieHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/movies", app.createMovieHandler)
-	router.HandlerFunc(http.MethodPost, "/v1/movies/bytes", app.createMovieHandlerJsonMarshal)
+	router.HandlerFunc(http.MethodPost, "/v1/movies/bytes", app.createMovieHandlerMarshal)
 
 	return router
 }

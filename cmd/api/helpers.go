@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -55,5 +57,78 @@ func (app *app) writeJsonToStream(w http.ResponseWriter, status int, data interf
 		return err
 	}
 
+	return nil
+}
+
+func (app *app) decodeJson(r *http.Request, data interface{}) error {
+	err := json.NewDecoder(r.Body).Decode(data)
+	if err != nil {
+		var syntaxErr *json.SyntaxError
+		var unmarshalTypeErr *json.UnmarshalTypeError
+		var invalidUnmarshalErr *json.InvalidUnmarshalError
+
+		switch {
+		case errors.As(err, &syntaxErr):
+			return fmt.Errorf("body contains badly formed JSON (at char %d)", syntaxErr.Offset)
+		case errors.As(err, &unmarshalTypeErr):
+			if unmarshalTypeErr.Field != "" {
+				return fmt.Errorf("body contains incorrect JSON type for field %q", unmarshalTypeErr.Field)
+			}
+			return fmt.Errorf("body contains incorrect JSON type (at char %d)", unmarshalTypeErr.Offset)
+		case errors.As(err, &invalidUnmarshalErr):
+			panic(err)
+		case errors.Is(err, io.EOF):
+			return errors.New("body must not be empty")
+		case errors.Is(err, io.ErrUnexpectedEOF):
+			return errors.New("body contains badly formed JSON")
+		default:
+			return err
+		}
+	}
+	r.Body.Close()
+
+	return nil
+}
+
+func (app *app) unmarshalJson(r *http.Request, data interface{}) error {
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		// This err cannot be caught since io.ReadAll doesn't treat
+		// EOF as error
+		// if err == io.ErrUnexpectedEOF {
+		// 	return errors.New("body contains badly formed JSON")
+		// }
+		return err
+	}
+	if len(b) < 1 {
+		return errors.New("body must not be empty")
+	}
+
+	err = json.Unmarshal(b, data)
+	if err != nil {
+		var syntaxErr *json.SyntaxError
+		var unmarshalTypeErr *json.UnmarshalTypeError
+		var invalidUnmarshalErr *json.InvalidUnmarshalError
+
+		switch {
+		// This error also cannot be caught since json.Unmarshal treats
+		// empty body as Syntax error
+		// case errors.Is(err, io.ErrUnexpectedEOF):
+		// 	return errors.New("body contains badly formed JSON")
+		case errors.As(err, &syntaxErr):
+			return fmt.Errorf("body contains badly formed JSON (at char %d)", syntaxErr.Offset)
+		case errors.As(err, &unmarshalTypeErr):
+			if unmarshalTypeErr.Field != "" {
+				return fmt.Errorf("body contains incorrect JSON type for field %q", unmarshalTypeErr.Field)
+			}
+			return fmt.Errorf("body contains incorrect JSON type (at char %d)", unmarshalTypeErr.Offset)
+		case errors.As(err, &invalidUnmarshalErr):
+			panic(err)
+		default:
+			return err
+		}
+	}
+
+	defer r.Body.Close()
 	return nil
 }

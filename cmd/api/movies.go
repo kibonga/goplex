@@ -1,9 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 	"time"
 
@@ -41,33 +38,21 @@ type MovieCreateRequest struct {
 
 func (app *app) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var movie MovieCreateRequest
-	err := json.NewDecoder(r.Body).Decode(&movie)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
 
-	fmt.Printf("%v", movie)
-	app.writeJson(w, http.StatusCreated, "created successfully", nil)
+	err := app.decodeJson(r, &movie)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+	}
 
 	defer r.Body.Close()
 }
 
-func (app *app) createMovieHandlerJsonMarshal(w http.ResponseWriter, r *http.Request) {
-	b, err := io.ReadAll(r.Body)
+func (app *app) createMovieHandlerMarshal(w http.ResponseWriter, r *http.Request) {
+	var movie MovieCreateRequest
+	err := app.unmarshalJson(r, &movie)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
-	movie := &MovieCreateRequest{}
-	err = json.Unmarshal(b, movie)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
+		app.badRequestResponse(w, r, err)
 	}
 
 	defer r.Body.Close()
-
-	fmt.Printf("%v", movie)
-	app.writeJson(w, http.StatusCreated, "created successfully", nil)
 }
