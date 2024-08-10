@@ -41,10 +41,10 @@ type MovieCreateRequest struct {
 }
 
 type MovieUpdateRequest struct {
-	Title   string       `json:"title"`
-	Year    int32        `json:"year"`
-	Runtime data.Runtime `json:"runtime"`
-	Genres  []string     `json:"genres"`
+	Title   *string       `json:"title"`
+	Year    *int32        `json:"year"`
+	Runtime *data.Runtime `json:"runtime"`
+	Genres  []string      `json:"genres"`
 }
 
 func (app *app) createMovieHandler(w http.ResponseWriter, r *http.Request) {
@@ -136,10 +136,21 @@ func (app *app) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 		app.badRequestResponse(w, r, err)
 	}
 
-	movie.Title = req.Title
-	movie.Year = req.Year
-	movie.Runtime = req.Runtime
-	movie.Genres = req.Genres
+	if req.Title != nil {
+		movie.Title = *req.Title
+	}
+
+	if req.Year != nil {
+		movie.Year = *req.Year
+	}
+
+	if req.Runtime != nil {
+		movie.Runtime = *req.Runtime
+	}
+
+	if req.Genres != nil {
+		movie.Genres = req.Genres
+	}
 
 	validator := validator.New()
 	data.ValidateMovie(validator, movie)
@@ -164,14 +175,12 @@ func (app *app) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *app) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract the id
 	id, err := app.readIdParam(r)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
-	// Delete movie from DB
 	err = app.models.Movies.Delete(int(id))
 	if err != nil {
 		switch {
@@ -183,7 +192,6 @@ func (app *app) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Write back response
 	err = app.writeJson(w, http.StatusNoContent, nil, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
