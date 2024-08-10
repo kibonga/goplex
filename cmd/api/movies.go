@@ -113,14 +113,12 @@ func (app *app) createMovieHandlerMarshal(w http.ResponseWriter, r *http.Request
 }
 
 func (app *app) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract id from route
 	id, err := app.readIdParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 
-	// Check if movie exists by fetching by id
 	movie, err := app.models.Movies.Get(int(id))
 	if err != nil {
 		switch {
@@ -133,19 +131,16 @@ func (app *app) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req MovieUpdateRequest
-	// Decode Update request json
 	err = app.decodeJson(r, &req)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 	}
 
-	// Update data.Movie model with new values
 	movie.Title = req.Title
 	movie.Year = req.Year
 	movie.Runtime = req.Runtime
 	movie.Genres = req.Genres
 
-	// Validate movie
 	validator := validator.New()
 	data.ValidateMovie(validator, movie)
 	if !validator.Valid() {
@@ -153,18 +148,43 @@ func (app *app) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update movie
 	err = app.models.Movies.Update(movie)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	// Handle update result
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("v1/movies/%d", movie.Id))
 
 	err = app.writeJson(w, http.StatusOK, payload{"movie": movie}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *app) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the id
+	id, err := app.readIdParam(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	// Delete movie from DB
+	err = app.models.Movies.Delete(int(id))
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	// Write back response
+	err = app.writeJson(w, http.StatusNoContent, nil, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
