@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"goplex.kibonga/internal/data"
 	"goplex.kibonga/internal/validator"
@@ -16,16 +16,18 @@ func (app *app) showMovieHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &data.Movie{
-		Id:        id,
-		CreatedAt: time.Now(),
-		Title:     "Romul",
-		Year:      int32(time.Now().Year()),
-		Runtime:   150,
-		Genres:    []string{"Sci-Fi", "Horror", "Thriller"},
+	movie, err := app.models.Movies.Get(int(id))
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
 	}
 
-	if err := app.writeJsonToStream(w, http.StatusOK, payload{"movie": data}, nil); err != nil {
+	if err := app.writeJsonToStream(w, http.StatusOK, payload{"movie": movie}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
