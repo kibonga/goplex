@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/lib/pq"
 	"goplex.kibonga/internal/validator"
 )
 
@@ -91,7 +92,13 @@ func uniqueGenres(genres []string) bool {
 }
 
 func (m MovieModel) Insert(movie *Movie) error {
-	return nil
+	query := `insert into movies (title, year, runtime, genres)
+	values ($1, $2, $3, $4)
+	returning id, created_at, version`
+
+	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
+
+	return m.DB.QueryRow(query, args...).Scan(&movie.Id, &movie.CreatedAt, &movie.Version)
 }
 
 func (m MovieModel) Update(movie *Movie) error {
