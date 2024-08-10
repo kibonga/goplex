@@ -49,6 +49,8 @@ func main() {
 
 	flag.Parse()
 
+	fmt.Printf("max conns=%d\n", cfg.db.maxOpenConn)
+
 	db, err := openDb(&cfg)
 	if err != nil {
 		log.Fatal(err)
