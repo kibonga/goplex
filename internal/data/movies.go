@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"time"
 
 	"goplex.kibonga/internal/validator"
@@ -14,6 +15,10 @@ type Movie struct {
 	Runtime   Runtime   `json:"runtime,omitempty"`
 	Genres    []string  `json:"genres,omitempty"`
 	Version   int32     `json:"version,omitempty"`
+}
+
+type MovieModel struct {
+	DB *sql.DB
 }
 
 func ValidateMovie(v *validator.Validator, m *Movie) {
@@ -83,4 +88,20 @@ func maxGenres(genres []string) bool {
 
 func uniqueGenres(genres []string) bool {
 	return validator.Unique(genres...)
+}
+
+func (m MovieModel) Insert(movie *Movie) error {
+	return nil
+}
+
+func (m MovieModel) Update(movie *Movie) error {
+	return nil
+}
+
+func (m MovieModel) Get(id int) (*Movie, error) {
+	return nil, nil
+}
+
+func (m MovieModel) Delete(id int) error {
+	return nil
 }
