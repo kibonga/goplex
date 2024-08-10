@@ -105,12 +105,22 @@ func (m MovieModel) Insert(movie *Movie) error {
 func (m MovieModel) Update(movie *Movie) error {
 	query := `update movies
 	set title = $1, year = $2, runtime = $3, genres = $4, version = version + 1
-	where id = $5
+	where id = $5 and version = $6
 	returning version`
 
-	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres), movie.Id}
+	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres), movie.Id, movie.Version}
 
-	return m.DB.QueryRow(query, args...).Scan(&movie.Version)
+	err := m.DB.QueryRow(query, args...).Scan(&movie.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m MovieModel) Get(id int) (*Movie, error) {
