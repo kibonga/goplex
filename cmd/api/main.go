@@ -11,6 +11,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"goplex.kibonga/internal/data"
 )
 
 const version string = "1.0.0"
@@ -30,7 +31,7 @@ type app struct {
 	config  config
 	logger  *log.Logger
 	version string
-	db      *sql.DB
+	models  data.Models
 }
 
 const defaultMaxIdleTime int = 1000 * 60 * 15
@@ -48,19 +49,25 @@ func main() {
 
 	flag.Parse()
 
-	app := &app{
-		logger:  logger,
-		version: version,
-		config:  cfg,
-	}
-
 	db, err := openDb(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	drivers := sql.Drivers()
+	fmt.Println("Registered drivers:")
+	for _, d := range drivers {
+		fmt.Println(d)
+	}
+
 	fmt.Printf("database connection pool established\n")
-	app.db = db
+
+	app := &app{
+		logger:  logger,
+		version: version,
+		config:  cfg,
+		models:  data.NewModels(db),
+	}
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", app.config.port),
