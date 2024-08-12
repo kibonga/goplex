@@ -53,6 +53,10 @@ func Unique(values ...string) bool {
 	return len(values) == len(valuesMap)
 }
 
+func GreaterThan(x, y int) bool {
+	return x > y
+}
+
 func Unique2(vals ...string) bool {
 	valsMap := make(map[string]bool)
 

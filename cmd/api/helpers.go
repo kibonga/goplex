@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
+	"goplex.kibonga/internal/validator"
 )
 
 type payload map[string]interface{}
@@ -22,6 +25,42 @@ func (app *app) readIdParam(r *http.Request) (int64, error) {
 	}
 
 	return id, nil
+}
+
+func (app *app) readStr(qs url.Values, k string, def string) string {
+	s := qs.Get(k)
+
+	if s == "" {
+		return def
+	}
+
+	return s
+}
+
+func (app *app) readCSV(qs url.Values, k string, def []string) []string {
+	csv := qs.Get(k)
+
+	if csv == "" {
+		return def
+	}
+
+	return strings.Split(csv, ",")
+}
+
+func (app *app) readInt(qs url.Values, k string, v *validator.Validator, def int) int {
+	s := qs.Get(k)
+
+	if s == "" {
+		return def
+	}
+
+	i, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		v.AddError(k, "must be an integer value")
+		return def
+	}
+
+	return int(i)
 }
 
 func (app *app) writeJson(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
