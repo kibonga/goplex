@@ -179,3 +179,43 @@ func (m MovieModel) Delete(id int) error {
 
 	return nil
 }
+
+func (m MovieModel) GetAll(title string, genres []string, filters *Filters) ([]*Movie, error) {
+	query := `select id, created_at, title, year, runtime, genres, version
+	from movies 
+	where (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) or $1 = '') and
+	(genres @> $2 or $2 = '{}')
+	order by id`
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	args := []interface{}{title, pq.Array(genres)}
+
+	sqlRows, err := m.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer sqlRows.Close()
+
+	movies := []*Movie{}
+
+	// Iterate over sql rows
+	for sqlRows.Next() {
+		var m Movie
+
+		err = sqlRows.Scan(&m.Id, &m.CreatedAt, &m.Title, &m.Year, &m.Runtime, pq.Array(&m.Genres), &m.Version)
+		if err != nil {
+			return nil, err
+		}
+
+		movies = append(movies, &m)
+	}
+
+	if err := sqlRows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Return rows
+	return movies, nil
+}
