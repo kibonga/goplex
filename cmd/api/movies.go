@@ -236,13 +236,13 @@ func (app *app) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movies, err := app.models.Movies.GetAll(req.Title, req.Genres, req.Filters)
+	movies, metadata, err := app.models.Movies.GetAll(req.Title, req.Genres, req.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = app.writeJson(w, http.StatusOK, payload{"movies": movies}, nil)
+	err = app.writeJson(w, http.StatusOK, payload{"movies": movies, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
