@@ -219,13 +219,11 @@ func (app *app) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *app) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("List movies handler")
-	// Extract req
 	req := listMoviesReq()
 	urlVals := r.URL.Query()
 
 	v := validator.New()
 
-	// Map input
 	req.Title = app.readStr(urlVals, "title", "")
 	req.Genres = app.readCSV(urlVals, "genres", []string{})
 	req.Filters.PageSize = app.readInt(urlVals, "page_size", v, 20)
@@ -233,20 +231,17 @@ func (app *app) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
 	req.Filters.Sort = app.readStr(urlVals, "sort", "id")
 	req.Filters.ValidSortValues = *validSortVals()
 
-	// Validate input
 	if data.ValidateFilters(v, req.Filters); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	// Call db
 	movies, err := app.models.Movies.GetAll(req.Title, req.Genres, req.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	// Send back resp
 	err = app.writeJson(w, http.StatusOK, payload{"movies": movies}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)

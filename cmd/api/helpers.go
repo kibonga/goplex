@@ -64,7 +64,7 @@ func (app *app) readInt(qs url.Values, k string, v *validator.Validator, def int
 }
 
 func (app *app) writeJson(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
-	payload, err := json.Marshal(data)
+	payload, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
 	}
