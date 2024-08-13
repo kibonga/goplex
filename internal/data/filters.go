@@ -1,6 +1,10 @@
 package data
 
-import "goplex.kibonga/internal/validator"
+import (
+	"strings"
+
+	"goplex.kibonga/internal/validator"
+)
 
 const (
 	MIN_PAGE      int = 0
@@ -34,4 +38,22 @@ func validatePageSize(v *validator.Validator, pageSize int) {
 
 func validateSort(v *validator.Validator, sortVal string, validSorts []string) {
 	v.Check(v.In(sortVal, validSorts...), "sort", "invalid sort value")
+}
+
+func (f Filters) sortColumn() string {
+	for _, v := range f.ValidSortValues {
+		if f.Sort == v {
+			return strings.TrimPrefix(f.Sort, "-")
+		}
+	}
+
+	panic("invalid sort param: " + f.Sort)
+}
+
+func (f Filters) sortDirection() string {
+	if strings.HasPrefix(f.Sort, "-") {
+		return "DESC"
+	}
+
+	return "ASC"
 }
