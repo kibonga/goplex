@@ -12,6 +12,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"goplex.kibonga/internal/data"
+	"goplex.kibonga/internal/jsonlog"
 )
 
 const version string = "1.0.0"
@@ -29,7 +30,7 @@ type config struct {
 
 type app struct {
 	config  config
-	logger  *log.Logger
+	logger  *jsonlog.Logger
 	version string
 	models  data.Models
 }
@@ -38,7 +39,7 @@ const defaultMaxIdleTime int = 1000 * 60 * 15
 
 func main() {
 	var cfg config
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
 	flag.IntVar(&cfg.port, "port", 4000, "Server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
@@ -49,20 +50,12 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Printf("max conns=%d\n", cfg.db.maxOpenConn)
-
 	db, err := openDb(&cfg)
 	if err != nil {
-		log.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
-
-	drivers := sql.Drivers()
-	fmt.Println("Registered drivers:")
-	for _, d := range drivers {
-		fmt.Println(d)
-	}
-
-	fmt.Printf("database connection pool established\n")
+	defer db.Close()
+	logger.PrintInfo("database connection pool established", nil)
 
 	app := &app{
 		logger:  logger,
@@ -77,11 +70,15 @@ func main() {
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
+		ErrorLog:     log.New(logger, "", 0),
 	}
 
-	logger.Printf("Starting server on addr: %d", app.config.port)
+	logger.PrintInfo("starting server", map[string]string{
+		"addr": srv.Addr,
+		"env":  cfg.env,
+	})
 	err = srv.ListenAndServe()
-	log.Fatal(err)
+	logger.PrintFatal(err, nil)
 }
 
 func openDb(cfg *config) (*sql.DB, error) {
