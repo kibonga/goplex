@@ -101,6 +101,8 @@ func (app *app) writeJsonToStream(w http.ResponseWriter, status int, data interf
 
 func (app *app) decodeJson(r *http.Request, data interface{}) error {
 	err := json.NewDecoder(r.Body).Decode(data)
+	defer r.Body.Close()
+
 	if err != nil {
 		var syntaxErr *json.SyntaxError
 		var unmarshalTypeErr *json.UnmarshalTypeError
