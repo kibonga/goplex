@@ -70,3 +70,7 @@ func Unique2(vals ...string) bool {
 
 	return false
 }
+
+func (v *Validator) RequiredString(input string) bool {
+	return len(input) > 0
+}
