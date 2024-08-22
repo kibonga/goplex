@@ -93,11 +93,11 @@ func validatePasswordPlaintext(v *validator.Validator, password string) {
 }
 
 func minPasswordLen(password string) bool {
-	return len(password) < 8
+	return len(password) >= 8
 }
 
 func maxPasswordLen(password string) bool {
-	return len(password) > 72
+	return len(password) <= 72
 }
 
 func validateName(v *validator.Validator, name string) {
@@ -115,11 +115,11 @@ func maxNameLen(name string) bool {
 }
 
 func (m UserModel) Insert(u *User) error {
-	query := `insert into users (name, email, password_hash)
-	values($1, $2, $3)
+	query := `insert into users (name, email, password_hash, activated)
+	values($1, $2, $3, $4)
 	returning id, created_at, version`
 
-	args := []interface{}{u.Name, u.Email, u.Password.hash}
+	args := []interface{}{u.Name, u.Email, u.Password.hash, u.Activated}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
