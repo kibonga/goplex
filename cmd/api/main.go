@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"os"
+	"sync"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -44,6 +45,7 @@ type app struct {
 	version string
 	models  data.Models
 	mailer  mailer.Mailer
+	wg      sync.WaitGroup
 }
 
 const defaultMaxIdleTime int = 1000 * 60 * 15
