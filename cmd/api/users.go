@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"goplex.kibonga/internal/data"
 	"goplex.kibonga/internal/validator"
@@ -55,15 +56,27 @@ func (app *app) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.mailer.Send(user.Email, "user_welcome.tmpl", user)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
+	app.background(func() {
+		err = app.mailer.Send(user.Email, "user_welcome.tmpl", user)
+		if err != nil {
+			app.logger.PrintError(err, nil)
+			return
+		}
+	})
 
 	// Handle response
 	err = app.writeJson(w, http.StatusCreated, payload{"user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *app) fooHandler(w http.ResponseWriter, r *http.Request) {
+
+	go func() {
+		time.Sleep(time.Second * 3)
+		app.writeJson(w, http.StatusAccepted, payload{"bar": "foo"}, nil)
+	}()
+
+	app.writeJson(w, http.StatusOK, payload{"foo": "bar"}, nil)
 }

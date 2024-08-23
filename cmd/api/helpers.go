@@ -173,3 +173,16 @@ func (app *app) unmarshalJson(r *http.Request, data interface{}) error {
 	defer r.Body.Close()
 	return nil
 }
+
+func (app *app) background(fn func()) {
+	go func() {
+
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.PrintError(fmt.Errorf("%s", err), nil)
+			}
+		}()
+
+		fn()
+	}()
+}
