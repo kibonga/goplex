@@ -10,6 +10,7 @@ import (
 	_ "github.com/lib/pq"
 	"goplex.kibonga/internal/data"
 	"goplex.kibonga/internal/jsonlog"
+	"goplex.kibonga/internal/mailer"
 )
 
 const version string = "1.0.0"
@@ -28,6 +29,13 @@ type config struct {
 		burst   int
 		enabled bool
 	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 }
 
 type app struct {
@@ -35,6 +43,7 @@ type app struct {
 	logger  *jsonlog.Logger
 	version string
 	models  data.Models
+	mailer  mailer.Mailer
 }
 
 const defaultMaxIdleTime int = 1000 * 60 * 15
@@ -56,6 +65,12 @@ func main() {
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "a4d461daf1ecae", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "20fba459b46101", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "GOPLEX <no-reply@goplex.net>", "SMTP sender")
+
 	flag.Parse()
 
 	db, err := openDb(&cfg)
@@ -70,6 +85,7 @@ func main() {
 		version: version,
 		config:  cfg,
 		models:  data.NewModels(db),
+		mailer:  mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
 	if err := app.serve(); err != nil {
