@@ -76,3 +76,65 @@ func (app *app) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *app) activateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Token string `json:"token"`
+	}
+
+	err := app.decodeJson(r, &req)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	var token *data.Token = &data.Token{
+		PlainText: req.Token,
+	}
+
+	v := validator.New()
+	data.ValidateToken(v, token)
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	user, err := app.models.Users.GetByToken(data.ScopeActivation, token.PlainText)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			v.AddError("token", "invalid or expired activation token")
+			app.failedValidationResponse(w, r, v.Errors)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	user.Activated = true
+
+	err = app.models.Users.Update(user)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrDuplicateEmail):
+			app.editConflictResponse(w, r)
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r) // Logically this case can never happen, but I included it anyways
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.models.Tokens.DeleteTokensForUser(data.ScopeActivation, user.Id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJson(w, http.StatusOK, payload{"user": user}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

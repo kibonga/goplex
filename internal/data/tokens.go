@@ -54,7 +54,7 @@ func ValidateToken(v *validator.Validator, t *Token) {
 }
 
 func validatePlaintextToken(v *validator.Validator, ptt string) {
-	v.Check(ptt == "", "token", "must be provided")
+	v.Check(ptt != "", "token", "must be provided")
 	v.Check(len(ptt) == 26, "token", "must be 26 bytes long")
 }
 
@@ -83,5 +83,16 @@ func (m TokenModel) Insert(t *Token) error {
 	defer cancel()
 
 	_, err := m.DB.ExecContext(ctx, query, args...)
+	return err
+}
+
+func (m TokenModel) DeleteTokensForUser(scope string, userID int64) error {
+	query := `delete from tokens 
+	where user_id = $1 and scope = $2`
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	_, err := m.DB.ExecContext(ctx, query, userID, scope)
 	return err
 }
