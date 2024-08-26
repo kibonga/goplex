@@ -218,7 +218,6 @@ func (app *app) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *app) listMoviesHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("List movies handler")
 	req := listMoviesReq()
 	urlVals := r.URL.Query()
 
