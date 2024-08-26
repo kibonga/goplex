@@ -67,10 +67,10 @@ func main() {
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
-	flag.StringVar(&cfg.smtp.host, "smtp-host", "smtp.mailtrap.io", "SMTP host")
-	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
-	flag.StringVar(&cfg.smtp.username, "smtp-username", "a4d461daf1ecae", "SMTP username")
-	flag.StringVar(&cfg.smtp.password, "smtp-password", "20fba459b46101", "SMTP password")
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "0902612716084e", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "c5865616978195", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "GOPLEX <no-reply@goplex.net>", "SMTP sender")
 
 	flag.Parse()
