@@ -51,12 +51,12 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 }
 
 func ValidateToken(v *validator.Validator, t *Token) {
-	validatePlaintextToken(v, t.PlainText)
+	ValidatePlaintextToken(v, t.PlainText)
 }
 
-func validatePlaintextToken(v *validator.Validator, ptt string) {
-	v.Check(ptt != "", "token", "must be provided")
-	v.Check(len(ptt) == 26, "token", "must be 26 bytes long")
+func ValidatePlaintextToken(v *validator.Validator, token string) {
+	v.Check(token != "", "token", "must be provided")
+	v.Check(len(token) == 26, "token", "must be 26 bytes long")
 }
 
 func (m TokenModel) New(userID int64, ttl time.Duration, scope string) (*Token, error) {
@@ -75,8 +75,7 @@ func (m TokenModel) New(userID int64, ttl time.Duration, scope string) (*Token, 
 
 func (m TokenModel) Insert(t *Token) error {
 	query := `insert into tokens (hash, user_id, expiry, scope)
-	values ($1, $2, $3, $4)
-	returning 420`
+	values ($1, $2, $3, $4)`
 
 	args := []interface{}{t.Hash, t.UserID, t.Expiry, t.Scope}
 
