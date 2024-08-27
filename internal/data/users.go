@@ -64,11 +64,11 @@ func (p *password) Matches(plaintextPassword string) (bool, error) {
 
 func ValidateUser(v *validator.Validator, u *User) {
 	validateName(v, u.Name)
-	validateEmail(v, u.Email)
-	validatePassword(v, &u.Password)
+	ValidateEmail(v, u.Email)
+	ValidatePassword(v, &u.Password)
 }
 
-func validateEmail(v *validator.Validator, email string) {
+func ValidateEmail(v *validator.Validator, email string) {
 	v.Check(v.RequiredString(email), "email", "is required")
 	v.Check(validEmail(email), "email", "must be a valid email address")
 }
@@ -77,9 +77,9 @@ func validEmail(email string) bool {
 	return validator.EmailRegExp.MatchString(email)
 }
 
-func validatePassword(v *validator.Validator, p *password) {
+func ValidatePassword(v *validator.Validator, p *password) {
 	if p.plaintext != nil {
-		validatePasswordPlaintext(v, *p.plaintext)
+		ValidatePasswordPlaintext(v, *p.plaintext)
 	}
 
 	if p.hash == nil {
@@ -87,7 +87,7 @@ func validatePassword(v *validator.Validator, p *password) {
 	}
 }
 
-func validatePasswordPlaintext(v *validator.Validator, password string) {
+func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 	v.Check(len(password) > 0, "password", "is required")
 	v.Check(minPasswordLen(password), "password", "must be at least 8 bytes long")
 	v.Check(maxPasswordLen(password), "password", "must not be more than 72 bytes")
