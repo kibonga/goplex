@@ -17,6 +17,8 @@ var (
 	duplicateEmailConstraint = `duplicate key value violates unique constraint "users_email_key"`
 )
 
+var AnonymousUser = &User{}
+
 type User struct {
 	Id        int64     `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
@@ -223,4 +225,8 @@ func (m UserModel) GetByToken(tokenScope, token string) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }
