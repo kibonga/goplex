@@ -11,8 +11,9 @@ type contextKey string
 
 const userContextKey = contextKey("user")
 
-func (app *app) contextSetUser(r *http.Request, u *data.User) *http.Request {
-	ctx := context.WithValue(context.Background(), userContextKey, u)
+func (app *app) contextSetUser(r *http.Request, user *data.User) *http.Request {
+	ctx := context.WithValue(r.Context(), userContextKey, user)
+
 	return r.WithContext(ctx)
 }
 
@@ -21,5 +22,6 @@ func (app *app) contextGetUser(r *http.Request) *data.User {
 	if !ok {
 		panic("missing user value in request context")
 	}
+
 	return user
 }
