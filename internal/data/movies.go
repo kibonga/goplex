@@ -144,7 +144,15 @@ func (m MovieModel) Get(id int) (*Movie, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	err := m.DB.QueryRowContext(ctx, query, id).Scan(&movie.Id, &movie.CreatedAt, &movie.Title, &movie.Year, &movie.Runtime, &movie.Genres, &movie.Version)
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+		&movie.Id,
+		&movie.CreatedAt,
+		&movie.Title,
+		&movie.Year,
+		&movie.Runtime,
+		pq.Array(&movie.Genres),
+		&movie.Version)
+
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
