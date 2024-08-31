@@ -6,17 +6,23 @@ import (
 	"time"
 )
 
-type Permission struct {
-	ID   int64
-	Code string
-}
+type Permissions []string
 
 type PermissionModel struct {
-	DB sql.DB
+	DB *sql.DB
 }
 
-func (m *PermissionModel) GetAllForUser(userID int64) ([]*Permission, error) {
-	query := `select p.id, p.code from permissions p
+func (perms Permissions) Include(code string) bool {
+	for _, p := range perms {
+		if code == p {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *PermissionModel) GetAllForUser(userID int64) (Permissions, error) {
+	query := `select p.code from permissions p
 	inner join users_permissions up on p.id = up.permission_id
 	inner join users u on u.id = up.user_id
 	where up.user_id = $1`
@@ -29,23 +35,23 @@ func (m *PermissionModel) GetAllForUser(userID int64) ([]*Permission, error) {
 		return nil, err
 	}
 
-	permissions := []*Permission{}
-
-	var permission Permission
+	var permissions Permissions
 
 	defer sqlRows.Close()
 
 	for sqlRows.Next() {
-		err = sqlRows.Scan(
-			&permission.ID,
-			&permission.Code,
-		)
+		var permission string
 
+		err = sqlRows.Scan(&permission)
 		if err != nil {
 			return nil, err
 		}
 
-		permissions = append(permissions, &permission)
+		permissions = append(permissions, permission)
+	}
+
+	if err = sqlRows.Err(); err != nil {
+		return nil, err
 	}
 
 	return permissions, nil
