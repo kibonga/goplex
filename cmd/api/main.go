@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -36,6 +38,9 @@ type config struct {
 		username string
 		password string
 		sender   string
+	}
+	cors struct {
+		trustedOrigins []string
 	}
 }
 
@@ -73,7 +78,14 @@ func main() {
 	flag.StringVar(&cfg.smtp.password, "smtp-password", "c5865616978195", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "GOPLEX <no-reply@goplex.net>", "SMTP sender")
 
+	flag.Func("cors-trusted-origins", "Cors trusted origins", func(s string) error {
+		cfg.cors.trustedOrigins = strings.Fields(s)
+		return nil
+	})
+
 	flag.Parse()
+
+	fmt.Printf("cors-trusted-origins=%v\n", cfg.cors.trustedOrigins)
 
 	db, err := openDb(&cfg)
 	if err != nil {

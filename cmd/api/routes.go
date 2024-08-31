@@ -30,5 +30,5 @@ func (app *app) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodPost, "/v1/tokens/authentication", app.createAuthTokenHandler)
 
-	return app.recoverPanic(app.limitRate(app.authenticate(router)))
+	return app.recoverPanic(app.enableCORS(app.limitRate(app.authenticate(router))))
 }
