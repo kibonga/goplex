@@ -183,3 +183,17 @@ func (app *app) requirePermissions(code string, next http.HandlerFunc) http.Hand
 
 	return app.requireActivatedUser(fn)
 }
+
+func (app *app) enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Vary", "Origin")
+
+		origin := r.Header.Get("Origin")
+
+		if origin != "" && app.includes(origin, app.config.cors.trustedOrigins) {
+			w.Header().Add("Access-Control-Allow-Origin", origin)
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
