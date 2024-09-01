@@ -186,12 +186,30 @@ func (app *app) requirePermissions(code string, next http.HandlerFunc) http.Hand
 
 func (app *app) enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Vary", "Origin")
+		w.Header().Set("Vary", "Origin")
+		w.Header().Set("Vary", "Access-Control-Request-Method")
 
 		origin := r.Header.Get("Origin")
+		fmt.Println("This is inside enable cors")
 
 		if origin != "" && app.includes(origin, app.config.cors.trustedOrigins) {
-			w.Header().Add("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+
+			fmt.Println("This is inside origin")
+
+			// Check if request is a preflight request
+			// 1. http method is options
+			// 2. has origin header
+			// 3. has access-control-request-method header
+			if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
+				w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, PUT, PATCH, DELETE")
+				w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+
+				fmt.Println("This is inside preflight")
+
+				w.WriteHeader(http.StatusOK)
+				return
+			}
 		}
 
 		next.ServeHTTP(w, r)
