@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/felixge/httpsnoop"
 	"golang.org/x/time/rate"
 	"goplex.kibonga/internal/data"
 	"goplex.kibonga/internal/validator"
@@ -221,17 +223,21 @@ func (app *app) metrics(next http.Handler) http.Handler {
 	totalReqRecv := expvar.NewInt("total_request_received")
 	totalRespSent := expvar.NewInt("total_reponses_sent")
 	totalProcessingTimeMicrosec := expvar.NewInt("total_processing_time_microsec")
+	totalRespSentByStatus := expvar.NewMap("total_responses_sent_by_status")
+
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		start := time.Now()
+		// start := time.Now()
 		totalReqRecv.Add(1)
 
-		next.ServeHTTP(w, r)
+		metrics := httpsnoop.CaptureMetrics(next, w, r)
 
 		totalRespSent.Add(1)
 
-		duration := time.Since(start).Microseconds()
-		totalProcessingTimeMicrosec.Add(duration)
+		// duration := time.Since(start).Microseconds()
+		totalProcessingTimeMicrosec.Add(metrics.Duration.Microseconds())
+
+		totalRespSentByStatus.Add(strconv.Itoa(metrics.Code), 1)
 	})
 }
