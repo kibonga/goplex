@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"expvar"
 	"fmt"
 	"net"
 	"net/http"
@@ -213,5 +214,24 @@ func (app *app) enableCORS(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *app) metrics(next http.Handler) http.Handler {
+	totalReqRecv := expvar.NewInt("total_request_received")
+	totalRespSent := expvar.NewInt("total_reponses_sent")
+	totalProcessingTimeMicrosec := expvar.NewInt("total_processing_time_microsec")
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		start := time.Now()
+		totalReqRecv.Add(1)
+
+		next.ServeHTTP(w, r)
+
+		totalRespSent.Add(1)
+
+		duration := time.Since(start).Microseconds()
+		totalProcessingTimeMicrosec.Add(duration)
 	})
 }

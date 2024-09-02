@@ -33,5 +33,5 @@ func (app *app) routes() http.Handler {
 
 	router.Handler(http.MethodGet, "/v1/metrics", expvar.Handler())
 
-	return app.recoverPanic(app.enableCORS(app.limitRate(app.authenticate(router))))
+	return app.metrics(app.recoverPanic(app.enableCORS(app.limitRate(app.authenticate(router)))))
 }
