@@ -64,7 +64,7 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 4000, "Server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 
-	flag.StringVar(&cfg.db.dsn, "Data Source Name", os.Getenv("GOPLEX_DB_DSN"), "Postrges DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", "", "Postrges DSN")
 
 	flag.IntVar(&cfg.db.maxOpenConn, "db-max-open-conns", 25, "Postgres max open connections")
 	flag.IntVar(&cfg.db.maxIdleConn, "db-max-idle-conns", 25, "Postgres max idle connections")
