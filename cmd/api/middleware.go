@@ -4,7 +4,6 @@ import (
 	"errors"
 	"expvar"
 	"fmt"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/felixge/httpsnoop"
+	"github.com/tomasen/realip"
 	"golang.org/x/time/rate"
 	"goplex.kibonga/internal/data"
 	"goplex.kibonga/internal/validator"
@@ -63,11 +63,12 @@ func (app *app) limitRate(next http.Handler) http.Handler {
 	}()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// ip, _, err := net.SplitHostPort(r.RemoteAddr)
 
-		ip, _, err := net.SplitHostPort(r.RemoteAddr)
-		if err != nil {
-			app.serverErrorResponse(w, r, err)
-		}
+		// if err != nil {
+		// 	app.serverErrorResponse(w, r, err)
+		// }
+		ip := realip.FromRequest(r)
 
 		mu.Lock()
 
