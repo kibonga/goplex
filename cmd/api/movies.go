@@ -37,29 +37,29 @@ func listMoviesReq() *ListMoviesRequest {
 	return &ListMoviesRequest{Filters: &data.Filters{}}
 }
 
-func (app *app) showMovieHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIdParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
+// func (app *app) showMovieHandler(w http.ResponseWriter, r *http.Request) {
+// 	id, err := app.readIdParam(r)
+// 	if err != nil {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
 
-	movie, err := app.models.Movies.Get(int(id))
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
+// 	movie, err := app.models.Movies.Get(int(id))
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrRecordNotFound):
+// 			app.notFoundResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
 
-	if err := app.writeJsonToStream(w, http.StatusOK, payload{"movie": movie}, nil); err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-}
+// 	if err := app.writeJsonToStream(w, http.StatusOK, payload{"movie": movie}, nil); err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 		return
+// 	}
+// }
 
 func (app *app) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 	var req MovieCreateRequest

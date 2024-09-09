@@ -225,7 +225,6 @@ func (app *app) metrics(next http.Handler) http.Handler {
 	totalProcessingTimeMicrosec := expvar.NewInt("total_processing_time_microsec")
 	totalRespSentByStatus := expvar.NewMap("total_responses_sent_by_status")
 
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// start := time.Now()
